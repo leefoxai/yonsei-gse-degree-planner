@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           base='https://raw.githubusercontent.com/leefoxai/yonsei-gse-calculator/main'
-          mkdir -p tests .github/workflows
+          mkdir -p tests
           files=(
             app.js
             certificate-rules.json
@@ -53,7 +53,6 @@ jobs:
             tests/projection_regression.cjs
             tests/release_maintenance.py
             tests/validate_packs.py
-            .github/workflows/validate.yml
           )
           for file in "${files[@]}"; do
             echo "sync $file"
@@ -64,6 +63,8 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+
           p=Path('tests/release_maintenance.py')
           s=p.read_text(encoding='utf-8')
           s=s.replace("RELEASE_VERSION = '3.3.1'", "RELEASE_VERSION = '1.0.0'")
@@ -71,7 +72,6 @@ jobs:
 
           p=Path('mobile.js')
           s=p.read_text(encoding='utf-8')
-          import re
           s=re.sub(r"const VERSION = '[^']+';", "const VERSION = '1.0.0-mobile-r1';", s, count=1)
           p.write_text(s, encoding='utf-8')
           PY
@@ -107,7 +107,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add app.js certificate-rules.json comprehensive-exam-2026-1.json data-pack.json index.html mobile-action-nav-fix.js mobile-base.js mobile-enhancements.js mobile-hotfix.js mobile-png-fix.js mobile.js public-copy-cleanup.js rules-pack.json styles.css tests .github/workflows/validate.yml REGRESSION_TEST_REPORT.md
+          git add app.js certificate-rules.json comprehensive-exam-2026-1.json data-pack.json index.html mobile-action-nav-fix.js mobile-base.js mobile-enhancements.js mobile-hotfix.js mobile-png-fix.js mobile.js public-copy-cleanup.js rules-pack.json styles.css tests REGRESSION_TEST_REPORT.md
           if git diff --cached --quiet; then
             echo 'Already synchronized'
             exit 0
