@@ -1,0 +1,116 @@
+name: Sync verified source snapshot
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/sync-source.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Pull verified public files
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://raw.githubusercontent.com/leefoxai/yonsei-gse-calculator/main'
+          mkdir -p tests .github/workflows
+          files=(
+            app.js
+            certificate-rules.json
+            comprehensive-exam-2026-1.json
+            data-pack.json
+            index.html
+            mobile-action-nav-fix.js
+            mobile-base.js
+            mobile-enhancements.js
+            mobile-hotfix.js
+            mobile-png-fix.js
+            mobile.js
+            public-copy-cleanup.js
+            rules-pack.json
+            styles.css
+            tests/generate_regression_report.py
+            tests/projection_regression.cjs
+            tests/release_maintenance.py
+            tests/validate_packs.py
+            .github/workflows/validate.yml
+          )
+          for file in "${files[@]}"; do
+            echo "sync $file"
+            curl --fail --silent --show-error --location "$base/$file" --output "$file"
+          done
+
+      - name: Normalize public release version
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/release_maintenance.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("RELEASE_VERSION = '3.3.1'", "RELEASE_VERSION = '1.0.0'")
+          p.write_text(s, encoding='utf-8')
+
+          p=Path('mobile.js')
+          s=p.read_text(encoding='utf-8')
+          import re
+          s=re.sub(r"const VERSION = '[^']+';", "const VERSION = '1.0.0-mobile-r1';", s, count=1)
+          p.write_text(s, encoding='utf-8')
+          PY
+          python tests/release_maintenance.py
+
+      - name: JavaScript syntax
+        run: |
+          node --check app.js
+          node --check mobile.js
+          node --check mobile-base.js
+          node --check mobile-enhancements.js
+          node --check mobile-hotfix.js
+          node --check mobile-png-fix.js
+          node --check mobile-action-nav-fix.js
+          node --check public-copy-cleanup.js
+
+      - name: Data and markup validation
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/validate_packs.py | tee validation.log
+
+      - name: Application regression
+        shell: bash
+        run: |
+          set -o pipefail
+          node tests/projection_regression.cjs | tee application.log
+
+      - name: Generate regression report
+        run: python tests/generate_regression_report.py --validation-log validation.log --application-log application.log
+
+      - name: Commit synchronized snapshot
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app.js certificate-rules.json comprehensive-exam-2026-1.json data-pack.json index.html mobile-action-nav-fix.js mobile-base.js mobile-enhancements.js mobile-hotfix.js mobile-png-fix.js mobile.js public-copy-cleanup.js rules-pack.json styles.css tests .github/workflows/validate.yml REGRESSION_TEST_REPORT.md
+          if git diff --cached --quiet; then
+            echo 'Already synchronized'
+            exit 0
+          fi
+          git commit -m 'release: sync verified v1.0.0 snapshot [skip ci]'
+          git push
