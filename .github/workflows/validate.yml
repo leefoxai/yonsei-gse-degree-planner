@@ -1,0 +1,43 @@
+name: Validate public release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify release metadata is normalized
+        run: |
+          python tests/release_maintenance.py
+          git diff --exit-code -- index.html styles.css app.js mobile.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py
+
+      - name: JavaScript syntax
+        run: |
+          node --check app.js
+          node --check mobile.js
+
+      - name: Data and markup validation
+        run: python tests/validate_packs.py
+
+      - name: Application regression
+        run: node tests/projection_regression.cjs
