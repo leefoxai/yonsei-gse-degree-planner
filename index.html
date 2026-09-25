@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b57a4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="교육대학원 이수현황">
+<title>연세대학교 교육대학원 졸업요건 이수현황 계산기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
+<link rel="stylesheet" href="styles.css?v=1.0.0">
+<meta name="application-version" content="1.0.0">
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="header-eyebrow no-print">Yonsei Univ. Graduate School of Education</div>
+    <div class="title-edit-row">
+      <h1 id="appTitle">연세대학교 교육대학원 졸업요건 이수현황 계산기</h1>
+      <button class="title-edit-btn no-print" id="editTitleBtn" type="button" title="타이틀명 수정" aria-label="타이틀명 수정">✎</button>
+    </div>
+    <p class="creator-line"><span>[기준학기] <b id="dataSnapshotText">2026-2</b></span><span>[제작자] 23-1 AI융합교육전공 이규호</span><span>[문의] leefox@yonsei.ac.kr</span></p>
+    <div class="topnote">
+      <div class="quick-actions no-print">
+        <button class="btn small" id="quickPrint" type="button">PDF 저장</button>
+        <button class="btn small danger" id="quickReset" type="button">초기화</button>
+      </div>
+      <div id="dataHealthBadge" class="data-health-badge no-print" title="데이터 및 계산 규칙 무결성 상태">검증 대기</div>
+    </div>
+  </header>
+
+  <details class="card quick-guide no-print" id="quickGuide" open>
+    <summary>사용방법 · 4단계</summary>
+    <div class="quick-guide-grid">
+      <div><b>1. 기본정보 입력</b></div>
+      <div><b>2. 수강이력 입력</b></div>
+      <div><b>3. 이수현황 확인</b></div>
+      <div><b>4. 향후 수강계획</b></div>
+    </div>
+    <div class="quick-guide-extra">
+      <span class="quick-guide-extra-title">핵심 흐름</span>
+      <div class="quick-guide-extra-list">
+        <span class="quick-guide-extra-item">현재 충족 요건과 부족 요건 확인</span>
+        <span class="quick-guide-extra-item">계획 과목을 추가해 충족 예정 상태 확인</span>
+        <span class="quick-guide-extra-item">필요할 때 시간표·개설정보 확인</span>
+      </div>
+    </div>
+  </details>
+
+  <div class="workflow-strip no-print" id="workflowStrip" aria-label="사용 순서">
+    <div class="workflow-step active" data-step="profile"><span class="num">1</span><span>기본정보</span></div>
+    <span class="workflow-arrow">→</span>
+    <div class="workflow-step" data-step="history"><span class="num">2</span><span>수강이력</span></div>
+    <span class="workflow-arrow">→</span>
+    <div class="workflow-step" data-step="result"><span class="num">3</span><span>이수현황</span></div>
+    <span class="workflow-arrow">→</span>
+    <div class="workflow-step" data-step="plan"><span class="num">4</span><span>수강계획</span></div>
+  </div>
+
+  <details class="input-zone step-details" id="inputZone" open>
+    <summary class="analysis-heading no-print">
+      <div><h2 class="step-title input-step-label" id="profileStepLabel"><span class="step-no">1</span><span>기본정보 입력</span></h2><p>전공·입학학기·과정/졸업유형을 선택하고 [기본정보 확인 완료]를 눌러주세요.</p></div>
+    </summary>
+  <section class="grid profile profile-v16" id="profileSection">
+    <div id="printProfileSummary" class="print-only print-profile-summary"></div>
+    <div class="card"><label>전공</label><select id="majorSelect"></select></div>
+    <div class="card"><label>입학학기</label><select id="admissionSelect"></select></div>
+    <div class="card">
+      <label>과정 / 졸업유형</label>
+      <div id="trackButtons" class="segmented">
+        <button type="button" data-track="report">졸업연구보고서</button>
+        <button type="button" data-track="thesis">논문</button>
+        <button type="button" data-track="research">연구과정(비학위)</button>
+      </div>
+      <div id="teacherLicenseWrap" class="teacher-license-wrap" style="display:none">
+        <label class="check-label"><input type="checkbox" id="wantsTeacherCertificate"> 교원자격증 취득 희망</label>
+        <label class="check-label"><input type="checkbox" id="hasTeacherLicense"> 2급 이상 교원자격증 보유</label>
+      </div>
+    </div>
+  </section>
+    <div class="profile-confirm-bar no-print" id="profileConfirmBar">
+      <div class="profile-confirm-copy">
+        <div class="profile-confirm-title" id="profileConfirmTitle">기본정보를 확인해주세요.</div>
+        <div class="profile-confirm-summary" id="profileConfirmSummary"></div>
+      </div>
+      <button class="btn primary" id="confirmProfileBtn" type="button">기본정보 확인 완료</button>
+    </div>
+    <div id="inputStatus" class="input-status no-print"></div>
+  </details>
+
+  <details class="card section input-section history-details step-details" id="historySection" open>
+    <summary class="analysis-heading">
+      <div><h2 class="step-title"><span class="step-no">2</span><span>기존 수강이력 입력 / 가져오기</span><span id="historyCompactSummary" class="history-compact-summary"></span></h2><p>수강이력을 한 과목 이상 등록하면 아래 이수현황 분석이 자동으로 시작됩니다.</p></div>
+    </summary>
+    <div class="callout">
+      과거에 이수한 과목은 최신 개설표에서 사라져도 <b>계산에 반영</b>됩니다.<br>
+      <b>전공교직 과목</b>은 교직 ↔ 전공선택으로 종별을 바꿀 수 있습니다.<br>
+      성적은 4.3 만점 기준 <b>C−(1.7) 이상만 이수로 인정</b>하며, 졸업요건 평점은 <b>누적평점 3.00 이상</b>입니다.
+    </div>
+    <details class="mobile-import-guide mobile-only no-print" id="mobileImportGuide" open>
+      <summary>📱 모바일에서 성적 가져오기</summary>
+      <div class="mobile-import-guide-body">
+        <div class="mobile-import-method recommended">
+          <b>PDF 파일이 있는 경우 · 권장</b>
+          <p>모바일 학사포털에서는 성적표를 PDF로 직접 출력하기 어렵습니다. 카카오톡·메일 등으로 받은 <b>전체성적조회 PDF</b>를 휴대폰에 저장한 뒤 불러오세요.</p>
+          <p class="ios-note"><b>iPhone:</b> PDF 열기 → 공유 → <b>파일에 저장</b> → 파일 앱의 다운로드·iCloud Drive·나의 iPhone에서 선택</p>
+          <p><b>Android:</b> PDF 다운로드 → 다운로드/내 파일에 저장 → 저장된 PDF 선택</p>
+          <button class="btn primary" type="button" data-mobile-import-pane="pdfImportPane">PDF 파일 불러오기</button>
+        </div>
+        <div class="mobile-import-method">
+          <b>PDF 파일이 없는 경우</b>
+          <p>연세포털의 <b>전체성적조회 화면을 여러 장 캡처</b>한 뒤 한 번에 선택하세요. 학정번호·과목명·학점·성적이 잘리지 않도록 캡처하고, OCR 결과의 수강학기와 성적을 반드시 확인하세요.</p>
+          <button class="btn" type="button" data-mobile-import-pane="ocrImportPane">캡처 여러 장 OCR</button>
+        </div>
+      </div>
+      <div class="mobile-import-tip">가능하면 PDF 불러오기를 우선 권장합니다. OCR은 화면 캡처 상태에 따라 인식 결과를 추가 확인해야 합니다.</div>
+    </details>
+    <div class="tabs import-tabs no-print" id="importTabs">
+      <button class="tab active" type="button" data-pane="pdfImportPane">성적조회 PDF 불러오기 (권장)</button>
+      <button class="tab" type="button" data-pane="ocrImportPane">캡처 OCR</button>
+      <button class="tab" type="button" data-pane="finderPane">강의 찾기 · 직접 입력</button>
+    </div>
+    <div class="import-pane active" id="pdfImportPane">
+    <div class="portal-guide">
+      <a href="https://portal.yonsei.ac.kr/" target="_blank" rel="noopener">연세포털서비스 열기 ↗</a>
+      <span>로그인 → 학사정보시스템 → <b>성적 → 학생 → 전체성적조회</b> → 우측 <b>[출력]</b> → <b>PDF로 저장</b></span>
+    </div>
+
+    <div class="pdf-import-panel no-print">
+      <div class="pdf-import-head">
+        <div>
+          <h3>연세포털 성적조회 PDF 불러오기</h3>
+          <div class="muted" style="margin-top:4px">연세포털 → 학사정보시스템 → 성적 → 학생 → 전체성적조회 → 우측 [출력] → PDF로 저장한 파일을 불러오세요. 한 파일로 전체 학기를 가져옵니다.</div>
+        </div>
+        <span class="pdf-recommended">권장</span>
+      </div>
+      <div class="pdf-import-actions">
+        <div class="pdf-file-box">
+          <label>연세포털 전체성적조회 PDF</label>
+          <input type="file" id="portalPdfFile" accept="application/pdf,.pdf">
+          <div class="pdf-privacy">PDF 원본은 서버에 저장하지 않습니다. 브라우저에서 교과목 정보만 읽고, 등록한 수강이력만 로컬 저장합니다.</div><div class="library-load-note">PDF 분석 기능은 버튼을 누를 때 필요한 라이브러리만 불러옵니다.</div>
+        </div>
+        <button class="btn primary" id="readPortalPdf" type="button">성적조회 PDF 불러오기</button>
+      </div>
+      <div id="portalPdfStatus" class="pdf-status">PDF를 선택하면 전체 학기 수강내역을 한 번에 가져올 수 있습니다.</div>
+      <div id="portalPdfResult" class="pdf-result"></div>
+    </div>
+    </div>
+
+    <div class="import-pane" id="ocrImportPane">
+    <div class="ocr-panel no-print">
+      <div class="pdf-import-head">
+        <div>
+          <h3>캡처 여러 장 OCR</h3>
+          <div class="muted" style="margin-top:4px">성적 화면 캡처를 여러 장 한 번에 선택하거나 차례로 붙여넣을 수 있습니다. 각 캡처의 수강학기를 확인한 뒤 한 번에 분석합니다.</div>
+        </div>
+        <span class="ocr-alt-badge">PDF가 없을 때</span>
+      </div>
+      <div class="ocr-form">
+        <div class="ocr-term-row">
+          <label>새 캡처의 기본 수강학기</label>
+          <select id="ocrTerm"></select>
+        </div>
+        <div class="ocr-drop" id="ocrPasteZone" tabindex="0" aria-label="성적 캡처 여러 장 선택 또는 붙여넣기 영역">
+          <span class="paste-badge">여러 장 선택 · Ctrl+V 추가 지원</span>
+          <div class="paste-hint">PC: 여러 이미지 파일을 한 번에 선택하거나, 캡처(Win+Shift+S) 후 이 영역에서 <b>Ctrl+V</b>를 반복하면 목록에 계속 추가됩니다.</div>
+          <input type="file" id="ocrImage" accept="image/png,image/jpeg,image/webp" multiple>
+          <div id="ocrQueue" class="ocr-queue"></div>
+          <div class="ocr-batch-note">작은 글씨는 자동 확대·명암 보정 후 인식하며, 인식이 약한 이미지는 더 크게 보정해 한 번 더 분석합니다.</div>
+        </div>
+        <div class="ocr-actions">
+          <div class="muted">학정번호·성적이 잘리지 않은 캡처가 가장 정확합니다. 서로 다른 학기 캡처를 함께 올린 경우 이미지별 수강학기를 수정할 수 있습니다.</div>
+          <div class="ocr-btns">
+            <button class="btn" id="clearOcrImage" type="button">캡처 모두 지우기</button>
+            <button class="btn primary" id="runOcr">선택한 캡처 OCR</button>
+          </div>
+        </div>
+      </div>
+      <div id="ocrStatus" class="pdf-status">캡처를 여러 장 선택하거나 하나씩 붙여넣으세요.</div>
+      <div class="ocr-progress"><div id="ocrProgressBar"></div></div>
+      <div id="ocrResult" class="ocr-result"></div>
+    </div>
+    </div>
+
+    <div class="import-pane" id="finderPane">
+    <div class="pdf-import-head">
+      <div>
+        <h3>강의 찾기 · 직접 입력</h3>
+        <div class="muted" style="margin-top:4px">개설 카탈로그에서 과목을 검색해 추가하거나, 목록에 없는 과거 과목은 직접 입력하세요.</div>
+      </div>
+    </div>
+    <div class="form-grid history-course-grid">
+      <div><label>이수학기</label><select id="historyTerm"></select></div>
+      <div><label>종별 필터</label><select id="historyFilterCategory"></select></div>
+      <div><label>검색 범위</label><select id="historyScope"><option value="mine">내 전공 + 교직/공통</option><option value="all">교육대학원 전체</option></select></div>
+      <div><label>과목명/학정번호 검색</label><input id="historyCourseSearch" class="course-search" type="text" placeholder="예: 머신러닝 / SAE6522"></div>
+      <div><label>과목 선택</label><select id="historyCourse"></select></div>
+      <div><label>인정 종별</label><select id="historyCategory"></select></div>
+      <div><label>학점</label><input id="historyCredits" type="number" min="0" step="1"></div>
+      <div><label>성적</label><select id="historyGrade"></select></div>
+      <div><label>성적 미입력 시 이수여부</label><select id="historyPassed"><option value="true">이수</option><option value="false">미이수</option></select></div>
+      <button class="btn primary" id="addHistory">추가</button>
+    </div>
+    <div id="historyCreditNote" class="muted" style="margin-top:8px"></div>
+    <div id="historySelectionNote" class="selection-note"></div>
+    <div style="margin-top:8px"><button class="btn small" id="manualHistory" type="button">과거/폐지 과목 직접 입력</button></div>
+    <div id="manualHistoryPanel" class="manual-panel">
+      <div class="form-grid">
+        <div><label>과목명</label><input id="manualCourseName" type="text" placeholder="과거 과목명"></div>
+        <div><label>학정번호(선택)</label><input id="manualCourseCode" type="text" placeholder="예: SAE6501"></div>
+        <div><label>인정 종별</label><select id="manualCategory"></select></div>
+        <div><label>학점</label><input id="manualCredits" type="number" min="0" step="1"></div>
+        <div><label>성적</label><select id="manualGrade"></select></div>
+        <div><label>성적 미입력 시 이수여부</label><select id="manualPassed"><option value="true">이수</option><option value="false">미이수</option></select></div>
+        <button class="btn primary" id="saveManualHistory" type="button">직접입력 저장</button>
+        <button class="btn" id="cancelManualHistory" type="button">닫기</button>
+      </div>
+      <div class="muted" style="margin-top:8px">선택한 이수학기를 그대로 사용합니다. 2024-2까지 일반 과목은 기본 2학점, 2025-1부터 기본 3학점으로 제안합니다.</div>
+    </div>
+    </div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>학기</th><th>과목</th><th>종별</th><th>학점</th><th>성적</th><th>상태</th><th></th></tr></thead><tbody id="historyBody"></tbody></table></div>
+    <div id="historySwitchableNotice" class="selection-note"></div>
+    <div class="semester-gpa-heading"><h3>학기별 평점</h3></div>
+    <div id="printSemesterGpaSummary" class="print-only print-gpa-summary"></div>
+    <div id="semesterGpaGrid" class="semester-gpa-grid"></div>
+  </details>
+
+  <details class="analysis-zone step-details" id="analysisZone" open>
+    <summary class="analysis-heading no-print">
+      <div><h2 class="step-title"><span class="step-no">3</span><span>이수현황</span></h2><p>현재 충족 상태와 부족한 요건을 먼저 확인합니다. 상세 계산 근거는 아래에서 펼쳐볼 수 있습니다.</p></div>
+      <div id="resultStatus" class="result-status"></div>
+    </summary>
+    <div class="analysis-empty no-print" id="dashboardEmptyState">
+      <svg class="empty-pictogram" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="10" y="7" width="28" height="36" rx="3"/><path d="M18 3h12v7H18z"/><path d="M17 34v-6M24 34V22M31 34v-9"/></svg>
+      <b id="dashboardEmptyTitle">아직 분석할 수강이력이 없습니다.</b>
+      <span id="dashboardEmptyText">2단계 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.</span>
+      <br><button class="btn primary" id="goHistoryInput" type="button">수강이력 입력하러 가기 ↑</button>
+    </div>
+  <section id="projectionControls" class="card projection-controls" aria-label="계획 반영 범위"></section>
+  <div id="resultPrimarySummary" class="result-primary-summary"></div>
+  <nav class="analysis-links no-print" aria-label="분석과 수강계획 이동">
+    <button type="button" class="btn small" data-analysis-target="resultDetailsPanel">상세 계산 근거</button>
+    <button type="button" class="btn small" data-analysis-target="planSection">4. 향후 수강계획</button>
+  </nav>
+  <div class="analysis-workspace" id="analysisWorkspace">
+  <details class="result-details-panel" id="resultDetailsPanel" open>
+    <summary>상세 계산 근거 · 체크리스트</summary>
+  <section class="kpi-wrap" id="kpiSection">
+    <h2 class="req-cards-title">이수요건 판정</h2>
+    <div class="grid kpi" id="kpiGrid"></div>
+    <div id="evaluationNotes" style="margin-top:12px"></div>
+    <div id="lifelongSection" class="lifelong-wrap" style="display:none">
+      <h3 class="lifelong-title">평생교육사 <span class="badge manual">추가 과정</span></h3>
+      <div class="grid kpi cert-kpi" id="certKpiGrid"></div>
+      <div id="lifelongNote"></div>
+    </div>
+    <div id="qualificationNotes"></div>
+  </section>
+  <section class="card section print-only" id="requirementsSection">
+    <h2>이수요건 판정</h2>
+    <div class="req-grid" id="requirementsGrid"></div>
+  </section>
+  <details class="card section teacher-checklist no-print" id="teacherChecklistSection" style="display:none" open>
+    <summary><span>교원자격 이수 체크리스트</span></summary>
+    <div class="callout" style="margin-top:10px">
+      <b>교원자격증 취득 희망자용 보조 체크리스트</b>입니다.
+      자동 계산이 가능한 교육대학원 수강이력과, 입학 시 학점인정·기본이수 검토처럼 <b>개인별 승인 결과를 직접 입력해야 하는 항목</b>을 함께 관리합니다.
+      이 화면만으로 자격취득을 최종 판정하지 않습니다.
+    </div>
+
+    <div id="teacherCertificateVariantWrap" class="teacher-cert-variant"></div>
+    <div id="teacherRuleNotice" class="callout warnbox" style="margin-top:10px"></div>
+    <h3 class="teacher-subtitle">자동 계산</h3>
+    <div id="teacherChecklistAuto" class="teacher-auto-grid teacher-auto-grid-v2"></div>
+    <div id="teacherEvidenceDetails" class="teacher-evidence-wrap"></div>
+
+    <h3 class="teacher-subtitle">본인 · 행정 확인 필요</h3>
+    <div class="teacher-manual-grid teacher-manual-grid-v2">
+      <label class="teacher-check teacher-secondary-only"><input type="checkbox" id="teacherRelatedMajorConfirmed"> 학부 전공 ↔ 교육대학원 전공의 관련전공/표시과목 일치 확인</label>
+      <label class="teacher-check"><input type="checkbox" id="teacherApplicationSubmitted"> 입학 첫 학기 교직과정 이수신청서 제출</label>
+
+      <label class="teacher-secondary-only">학부 인정 전공학점
+        <span class="muted">입학 전 취득한 학사학위의 과목 중 ‘전공 및 교직과목 학점인정서’로 승인된 값</span>
+        <input type="number" id="teacherRecognizedMajorCredits" min="0" max="50" step="1">
+      </label>
+      <label class="teacher-secondary-only">교육대학원 외 인정 교과교육 학점
+        <span class="muted">승인된 경우만 입력 · 해당 없는 전공은 자동 제외</span>
+        <input type="number" id="teacherRecognizedPedagogyCredits" min="0" max="20" step="1">
+      </label>
+
+      <label>학부·기타 인정 기본이수 과목수
+        <span class="muted">교육대학원 수강이력은 학정번호로 자동 계산되므로, 그 외 승인분만 입력</span>
+        <input type="number" id="teacherBasicCourseCount" min="0" max="20" step="1">
+      </label>
+      <label>학부·기타 인정 기본이수 학점
+        <span class="muted">교육대학원 외에서 승인받은 기본이수 학점만 입력</span>
+        <input type="number" id="teacherBasicCredits" min="0" max="60" step="1">
+      </label>
+      <label class="teacher-check" id="teacherBasicSpecialConfirmedWrap"><input type="checkbox" id="teacherBasicSpecialConfirmed"> 기본이수 필수·영역 조건을 학부 인정분까지 포함해 확인 완료</label>
+
+      <label class="teacher-secondary-only">학부 인정 교직이론 과목수
+        <span class="muted">동일 교직과목 인정분만 입력</span>
+        <input type="number" id="teacherRecognizedTheoryCount" min="0" max="6" step="1">
+      </label>
+      <label class="teacher-secondary-only">학부 인정 교직소양 과목수
+        <span class="muted">동일 교직과목 인정분만 입력</span>
+        <input type="number" id="teacherRecognizedLiteracyCount" min="0" max="4" step="1">
+      </label>
+
+      <label class="teacher-check teacher-secondary-only"><input type="checkbox" id="teacherPracticeExemptApproved"> 학교현장실습 면제/대체 승인</label>
+      <label class="teacher-secondary-only">교육봉사
+        <span class="muted">60시간 · 2급 이상 교원자격증 보유자는 면제 대상</span>
+        <input type="number" id="teacherVolunteerHours" min="0" max="60" step="1">
+      </label>
+
+      <label class="teacher-secondary-only">교직과목 평균성적
+        <span class="muted">100점 만점 환산값 직접 입력 · 80점 이상</span>
+        <input type="number" id="teacherTeachingAverage100" min="0" max="100" step="0.01">
+      </label>
+      <label class="teacher-secondary-only">전공과목 평균성적
+        <span class="muted">100점 만점 환산값 직접 입력 · 75점 이상</span>
+        <input type="number" id="teacherMajorAverage100" min="0" max="100" step="0.01">
+      </label>
+
+      <label id="teacherCounselor1ExperienceWrap" style="display:none">전문상담교사 1급 · 입학 전 교육경력
+        <span class="muted">교육대학원 입학 전에 인정되는 교육경력 · 3년 이상</span>
+        <input type="number" id="teacherCounselor1ExperienceYears" min="0" max="50" step="0.1">
+      </label>
+
+      <label>교직적성·인성검사 <span class="muted">(2회 · 기존 자격증/현직교원 포함)</span><input type="number" id="teacherAptitudeCount" min="0" max="2" step="1"></label>
+      <label>응급처치·심폐소생술 <span class="muted">(2회 · 기존 자격증/현직교원 포함)</span><input type="number" id="teacherCprCount" min="0" max="2" step="1"></label>
+      <label>성인지교육 <span class="muted">(2회 · 기존 교원자격증 소지자·현직교원 포함)</span><input type="number" id="teacherGenderCount" min="0" max="2" step="1"></label>
+
+      <label class="teacher-check"><input type="checkbox" id="teacherNoExamSubmitted"> 졸업학기 교원자격무시험검정원서 제출 <span class="muted">(성범죄경력조회 동의 포함)</span></label>
+      <label class="teacher-check"><input type="checkbox" id="teacherDrugCertificateSubmitted"> 마약·대마·향정신성의약품 중독 아님을 증명하는 의사진단서/검사결과 제출</label>
+    </div>
+
+    <div id="teacherChecklistSummary" class="teacher-checklist-summary"></div>
+    <div class="muted teacher-source-note">
+      기본이수·교과교육 자동판정은 2026-06-17 「전공별 기본이수과목 및 교과교육과목」 학정코드를 기준으로 합니다. 입학년도·자격종별·학부 인정결과에 따라 달라질 수 있습니다.
+      <a href="https://gse.yonsei.ac.kr/gse/license/t_secondary_2013.do" target="_blank" rel="noopener">2024학년도 이후 중등2급 기준 ↗</a> ·
+      <a href="https://gse.yonsei.ac.kr/gse/license/t_secondary_2009.do" target="_blank" rel="noopener">2013~2023학년도 기준 ↗</a> ·
+      <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내 ↗</a> ·
+      <a href="https://gse.yonsei.ac.kr/gse/license/t_counselor.do" target="_blank" rel="noopener">전문상담교사 1·2급 안내 ↗</a>
+    </div>
+  </details>
+  <details class="card section graduation-checklist no-print" id="graduationChecklistSection" style="display:none" open>
+    <summary><span>졸업자격 · 시험 체크리스트</span></summary>
+    <div class="callout" style="margin-top:10px">2026-2 신입생 오리엔테이션 기준 보조 체크입니다. 종합시험은 <b>3학기 이상 재학생</b>이 이수한 2과목을 응시해 각 70점 이상 합격해야 하며, 영어교육·조기영어교육·외국어로서의한국어교육은 전공영어시험도 확인합니다.</div>
+    <div class="graduation-check-grid">
+      <label>종합시험 합격 과목수 <span class="muted">2과목 필요</span><input type="number" id="graduationComprehensivePassed" min="0" max="2" step="1"></label>
+      <label id="graduationEnglishWrap">전공영어시험<select id="graduationEnglishStatus"><option value="pending">미확인</option><option value="passed">합격</option><option value="replaced">공인영어성적으로 대체</option></select></label>
+      <div class="grad-status-card"><span class="muted">졸업학기 진급요건</span><b id="graduationExamStatus">확인 필요</b><div class="muted" id="graduationExamNote"></div></div>
+    </div>
+  </details>
+  </details>
+<details class="card section input-section step-details" id="planSection" open>
+    <summary class="section-title-row plan-section-summary">
+      <h2 class="step-title"><span class="step-no">4</span><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2>
+      <div class="plan-scenario-inline no-print" onclick="event.stopPropagation()">
+        <div id="scenarioTabs" class="tabs plan-title-tabs"></div>
+        <button class="btn small plan-icon-btn" id="renameScenario" type="button" title="현재 시트 이름 수정" aria-label="현재 시트 이름 수정">✎</button>
+        <button class="btn small plan-icon-btn sheet-add" id="addScenario" type="button" title="새 시트 추가" aria-label="새 시트 추가">+</button>
+      </div>
+    </summary>
+    <div class="plan-sheet-utility no-print">
+      <button class="btn small" id="duplicateScenario" type="button">현재 시트 복제</button>
+      <button class="btn small danger" id="deleteScenario" type="button">현재 시트 삭제</button>
+    </div>
+    <div class="plan-forecast-notice no-print" id="planForecastNotice">
+      <b>개설 예정 정보 안내</b> · 확정 학기 이후 과목은 현재 개설예정표를 기준으로 표시합니다. 실제 개설 과목·교수·요일·시간은 변경될 수 있으므로 <b>졸업계획 참고용</b>으로 활용하고, 수강신청 전 실제 시간표를 반드시 확인하세요.
+    </div>
+    <div id="planGapCandidates" class="gap-candidates"></div>
+
+<details class="plan-builder-toggle no-print-ui" id="planAddSection" open>
+      <summary><span>계획 과목 추가</span></summary>
+      <div class="plan-builder">
+        <div class="muted plan-builder-help">학기·종별·검색으로 개설 과목을 찾아 수강계획에 추가하세요. 추가하면 이수현황과 시간표가 즉시 다시 계산됩니다.</div>
+      <div class="plan-filter-row">
+        <div><label>계획학기</label><select id="planTerm"></select></div>
+        <div><label>종별 필터</label><select id="planFilterCategory"></select></div>
+        <div><label>검색 범위</label><select id="planScope"><option value="mine">내 전공 + 교직/공통</option><option value="all">교육대학원 전체</option></select></div>
+        <div><label>교수명 검색</label><input id="planProfessorSearch" class="plan-professor-search" type="text" placeholder="예: 임웅 / 한수연 / 박헌우"></div>
+      </div>
+      <div class="plan-course-row">
+        <div><label>과목명 / 학정번호 검색</label><input id="planCourseSearch" class="course-search plan-course-search" type="text" placeholder="과목명 또는 학정번호 입력 · 예: 교육심리 / SPG6862"></div>
+        <div><label>개설 과목 선택</label><select id="planCourse" class="plan-course-select"></select></div>
+      </div>
+      <div class="plan-add-row">
+        <div><label>인정 종별</label><select id="planCategory"></select></div>
+        <div><label>학점</label><input id="planCredits" type="number" min="0" step="1"></div>
+        <button class="btn primary" id="addPlan">계획에 추가</button>
+      </div>
+      </div>
+    </details>
+    <div id="planSelectionNote" class="selection-note"></div>
+    <div class="callout warnbox" style="margin-top:10px">
+      2026-2는 <b>실제 시간표(.xls)</b>를 우선합니다. 5학기 예정표에는 있었으나 실제 시간표에서 확인되지 않은 과목은 미개설/변경 가능 항목으로 표시하고 기본 선택에서 제외합니다.
+      2027-1 이후는 예정 정보이므로 실제 개설 시 변경될 수 있습니다.
+    </div>
+    <div id="planWarnings"></div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>학기</th><th>과목</th><th>종별</th><th>학점</th><th>상태</th><th></th></tr></thead><tbody id="planBody"></tbody></table></div>
+
+    <div class="muted no-print" style="margin-top:14px">[선택 학기 저장]을 누르면 마지막으로 열어본 학기의 계획 시간표가 스냅샷으로 저장됩니다. 저장된 시간표를 선택하면 현재 계획과 나란히 비교할 수 있습니다.</div>
+    <div class="schedule-compare">
+      <div class="schedule-pane">
+        <div class="section-title-row"><h3 id="planTimetableTitle">학기별 계획 시간표</h3><button class="icon-btn no-print" id="planSettingsBtn" type="button" title="시간표 표시 설정" aria-label="시간표 표시 설정">⚙</button></div>
+        <div id="planSettingsPanel" class="plan-settings no-print"></div>
+        <div id="planTimetableGrid" class="plan-term-schedules"></div>
+        <div id="planTimetableUnplaced" class="plan-unplaced"></div>
+      </div>
+      <div class="schedule-pane reference-pane" id="scheduleReferencePane">
+        <div class="section-title-row"><h3>저장한 계획 시간표</h3><button class="btn small no-print" id="savePlanTimetableBtn" type="button">선택 학기 저장</button></div>
+        <div id="scheduleReferenceViewer" class="reference-viewer"><div class="empty">저장한 계획 시간표가 없습니다.</div></div>
+        <div id="scheduleReferenceFeed" class="reference-feed no-print"></div>
+      </div>
+    </div>
+  </details>
+  </div>
+  </details>
+
+
+
+  <details class="card extras-shell" id="extraFeatures">
+  <summary class="no-print"><div class="extras-summary-copy"><h2>개설정보 더 보기</h2><p>개설 예정 시간표와 학기별 강의 목록을 조회합니다.</p></div><span class="addon-badge">선택 사용</span></summary>
+  <div class="extras-body">
+
+  <section class="two section">
+    <div class="card catalog-section">
+      <h2>개설 예정 강의 시간표</h2>
+      <div class="toolbar">
+        <select id="timetableTerm" style="max-width:140px"></select>
+        <select id="timetableScope" style="max-width:260px">
+          <option value="major">내 전공 수업</option>
+          <option value="teaching">교직·교과 수업</option>
+          <option value="combined">내 전공 + 교직·교과</option>
+        </select>
+      </div>
+      <div class="table-wrap" style="margin-top:12px;max-height:390px"><table class="timetable-table"><thead><tr><th>요일</th><th>교시/시간</th><th>과목</th><th>종별</th><th>교수 / 강의실</th><th>계획</th></tr></thead><tbody id="timetableBody"></tbody></table></div>
+      <div class="muted" style="margin-top:8px">기본 시간은 <b>1·2교시 18:20–20:00</b> / <b>3·4교시 20:10–21:50</b>입니다. 평생교육사 등 별도 시간표가 있는 과목은 <b>원본 요일·시간</b>을 우선합니다.</div>
+      <details style="margin-top:10px"><summary>5학기 개설예정표와 실제 시간표의 변경사항 보기</summary><div id="diffBox" style="margin-top:8px"></div></details>
+    </div>
+    <div class="card catalog-section">
+      <h2>학기별 개설정보</h2>
+      <div class="toolbar catalog-toolbar">
+        <select id="catalogTerm"></select>
+        <select id="catalogMajor"></select>
+        <input id="catalogSearch" type="text" placeholder="과목명/학정번호/교수 검색">
+      </div>
+      <div class="table-wrap" style="margin-top:12px;max-height:390px"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th><th>계획</th></tr></thead><tbody id="catalogBody"></tbody></table></div>
+    </div>
+  </section>
+
+
+  </div>
+</details>
+
+
+  <section class="card section backup-section no-print">
+    <h2>데이터 관리 · 백업 <span class="addon-badge">백업</span></h2>
+    <div class="toolbar">
+      <button class="btn" id="exportData">내보내기</button>
+      <label class="btn" style="display:inline-block;margin:0;font-size:14px">불러오기<input type="file" id="importData" accept=".json" style="display:none"></label>
+      <button class="btn" id="runIntegrityCheck" type="button">무결성 검사</button>
+      <button class="btn" id="restoreAutoBackup" type="button">최근 자동백업 복구</button>
+      <button class="btn" id="pdfSaveBottom" type="button">PDF저장하기</button>
+      <button class="btn danger" id="resetData">초기화</button>
+    </div>
+    <div id="integritySummary" class="integrity-summary"></div>
+    <div id="packMetaSummary" class="muted" style="margin-top:8px"></div>
+    <div class="muted" style="margin-top:10px">모든 학생 데이터는 이 브라우저의 localStorage에만 저장됩니다. 불러오기·초기화 직전에는 자동 안전백업을 남기며, 기기 변경 전에는 JSON 내보내기를 권장합니다.</div>
+  </section>
+
+  <footer class="footer">
+    <b>v1.0.0:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 4단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
+    <b>공식 참고:</b>
+    <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
+    <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
+    <a href="https://gse.yonsei.ac.kr/gse/license/t_lifelong_2009.do" target="_blank" rel="noopener">평생교육사 안내</a><br>
+    <b>참고용 도구:</b> 실제 졸업요건 및 자격증 인정 여부는 개인별 학적·입학년도·자격증 신청 상태에 따라 달라질 수 있으므로 교육대학원 공식 안내 및 행정실 확인을 우선하십시오.<br><b>데이터 운영:</b> 공개 화면에는 관리자 업데이트 기능을 제공하지 않으며, 배포 데이터는 제작자가 별도 관리합니다.
+  </footer>
+</div>
+
+<nav id="mobileNav" class="mobile-nav no-print" aria-label="모바일 빠른 이동">
+  <button type="button" data-target="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>홈</button>
+  <button type="button" data-target="analysisZone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20v-8M11 20V5M17 20v-5"/><path d="M3 20h18"/></svg>이수현황</button>
+  <button type="button" data-target="historySection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>수강이력</button>
+  <button type="button" data-target="planSection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>수강계획</button>
+</nav>
+
+<button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
+
+<script defer src="app.js?v=1.0.0"></script>
+<script defer src="mobile.js?v=1.0.0"></script>
+</body>
+</html>
