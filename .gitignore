@@ -11,6 +11,7 @@ admin-local/
 *.log
 validation.log
 application.log
+*.tmp
 
 # OS/editor files
 .DS_Store
