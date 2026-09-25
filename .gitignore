@@ -1,0 +1,19 @@
+# Local maintainer-only tools and credentials
+admin-local.html
+admin-local/
+.local-admin/
+.env
+.env.*
+*.pem
+*.key
+
+# Local validation/runtime output
+*.log
+validation.log
+application.log
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
