@@ -46,12 +46,15 @@ jobs:
           node --check mobile-png-fix.js
           node --check mobile-action-nav-fix.js
           node --check public-copy-cleanup.js
+          node --check tests/action_navigation_regression.cjs
 
       - name: Data and markup validation
         run: python tests/validate_packs.py
 
       - name: Application regression
-        run: node tests/projection_regression.cjs
+        run: |
+          node tests/projection_regression.cjs
+          node tests/action_navigation_regression.cjs
 
       - name: Build static site artifact
         shell: bash
