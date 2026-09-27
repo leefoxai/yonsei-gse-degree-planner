@@ -46,6 +46,7 @@ jobs:
           node --check mobile-png-fix.js
           node --check mobile-action-nav-fix.js
           node --check public-copy-cleanup.js
+          node --check visitor-stats.js
           node --check tests/action_navigation_regression.cjs
 
       - name: Data and markup validation
@@ -65,7 +66,7 @@ jobs:
           cp index.html styles.css app.js mobile.js \
              mobile-base.js mobile-enhancements.js mobile-hotfix.js \
              mobile-png-fix.js mobile-action-nav-fix.js public-copy-cleanup.js \
-             data-pack.json rules-pack.json certificate-rules.json \
+             visitor-stats.js data-pack.json rules-pack.json certificate-rules.json \
              comprehensive-exam-2026-1.json _site/
           touch _site/.nojekyll
 
