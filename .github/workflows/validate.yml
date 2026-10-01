@@ -57,3 +57,4 @@ jobs:
           set -o pipefail
           node tests/projection_regression.cjs | tee application.log
           node tests/action_navigation_regression.cjs
+          node tests/visitor_stats_regression.cjs

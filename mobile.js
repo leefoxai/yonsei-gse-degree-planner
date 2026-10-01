@@ -4,7 +4,7 @@
   function load(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `${src}?v=${encodeURIComponent(VERSION)}`;
+      script.src = `${src}${src.includes('?') ? '&' : '?'}v=${encodeURIComponent(VERSION)}`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`스크립트 로드 실패: ${src}`));
@@ -17,6 +17,6 @@
     .then(() => load('mobile-png-fix.js'))
     .then(() => load('mobile-action-nav-fix.js'))
     .then(() => load('public-copy-cleanup.js'))
-    .then(() => load('visitor-stats.js'))
+    .then(() => load('visitor-stats.js?rev=20261001'))
     .catch(error => console.error('[mobile] 초기화 실패', error));
 })();

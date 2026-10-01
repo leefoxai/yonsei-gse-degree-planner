@@ -56,6 +56,7 @@ jobs:
         run: |
           node tests/projection_regression.cjs
           node tests/action_navigation_regression.cjs
+          node tests/visitor_stats_regression.cjs
 
       - name: Build static site artifact
         shell: bash
