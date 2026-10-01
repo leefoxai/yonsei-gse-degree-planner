@@ -1,9 +1,24 @@
 (() => {
   'use strict';
 
-  const SITE_ID = 'leefoxai-gse-degree-planner';
-  const TRACK_URL = `https://icount.kr/c.js?id=${encodeURIComponent(SITE_ID)}`;
-  const API_URL = `https://icount.kr/api.php?id=${encodeURIComponent(SITE_ID)}`;
+  const API_URL = 'https://wfbyuqkkcareqkcqkkcp.supabase.co/functions/v1/gse-visitor-stats';
+  const PUBLISHABLE_KEY = 'sb_publishable_Xh2uC6mgZP-5_ytpn6ZdnQ_3ZUXa8Zl';
+  const STORAGE_KEY = 'gse-degree-planner-visitor-v1';
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  let visitorId;
+
+  function getVisitorId() {
+    if (visitorId !== undefined) return visitorId;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      visitorId = UUID.test(saved || '') ? saved : crypto.randomUUID();
+      localStorage.setItem(STORAGE_KEY, visitorId);
+    } catch {
+      // Read-only statistics when storage is unavailable: avoid counting every reload.
+      visitorId = null;
+    }
+    return visitorId;
+  }
 
   let refreshing = false;
   let lastSuccess = false;
@@ -22,9 +37,8 @@
       .visitor-stats b{color:#344054;font-weight:700}
       .visitor-stats button{font:inherit;color:inherit;background:transparent;border:1px solid #d0d5dd;border-radius:4px;padding:2px 6px;cursor:pointer}
       .visitor-stats-sep{color:#98a2b3}
-      .visitor-tracker-host{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important}
       @media(max-width:640px){.visitor-stats{margin:8px 0 84px;font-size:11px}}
-      @media print{.visitor-stats,.visitor-tracker-host{display:none!important}}
+      @media print{.visitor-stats{display:none!important}}
     `;
     document.head.appendChild(style);
   }
@@ -37,6 +51,7 @@
     wrap.id = 'visitorStats';
     wrap.className = 'visitor-stats no-print';
     wrap.setAttribute('aria-label', '방문자 통계');
+    wrap.setAttribute('title', '2026-10-01부터 브라우저별 집계 · Today는 한국 시간 기준');
     wrap.innerHTML = '<span>Total <b id="visitorTotal">—</b></span><span class="visitor-stats-sep" aria-hidden="true">·</span><span>Today <b id="visitorDaily">—</b></span><span id="visitorStatsStatus" role="status" aria-live="polite">통계 확인 중…</span><button id="visitorStatsRetry" type="button" hidden>다시 시도</button>';
     const footer = document.querySelector('.footer');
     if (footer) footer.insertAdjacentElement('afterend', wrap);
@@ -45,24 +60,11 @@
     return wrap;
   }
 
-  function loadTracker() {
-    if (document.getElementById('visitorTrackerScript')) return;
-    const host = document.createElement('span');
-    host.className = 'visitor-tracker-host';
-    host.setAttribute('aria-hidden', 'true');
-    const script = document.createElement('script');
-    script.id = 'visitorTrackerScript';
-    script.src = TRACK_URL;
-    script.async = true;
-    host.appendChild(script);
-    document.body.appendChild(host);
-  }
-
   function validCount(value) {
     return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
   }
 
-  // Retrying only reads statistics; it must not load the tracker again.
+  // The server deduplicates this browser ID across retries and reloads.
   async function refreshStats() {
     if (!isProductionPage() || refreshing) return;
     refreshing = true;
@@ -74,6 +76,9 @@
     const timeout = window.setTimeout(() => controller.abort(), 8000);
     try {
       const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: PUBLISHABLE_KEY },
+        body: JSON.stringify({ visitor_id: getVisitorId() }),
         cache: 'no-store',
         credentials: 'omit',
         signal: controller.signal
@@ -103,7 +108,6 @@
   function init() {
     if (!isProductionPage()) return;
     ensureCounter();
-    loadTracker();
     window.setTimeout(refreshStats, 1600);
     window.setTimeout(() => { if (!lastSuccess) refreshStats(); }, 12000);
   }
