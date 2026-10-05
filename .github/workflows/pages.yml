@@ -45,9 +45,11 @@ jobs:
           node --check mobile-hotfix.js
           node --check mobile-png-fix.js
           node --check mobile-action-nav-fix.js
+          node --check academic-fixes.js
           node --check public-copy-cleanup.js
           node --check visitor-stats.js
           node --check tests/action_navigation_regression.cjs
+          node --check tests/academic_fixes_regression.cjs
 
       - name: Data and markup validation
         run: python tests/validate_packs.py
@@ -56,6 +58,7 @@ jobs:
         run: |
           node tests/projection_regression.cjs
           node tests/action_navigation_regression.cjs
+          node tests/academic_fixes_regression.cjs
           node tests/visitor_stats_regression.cjs
 
       - name: Build static site artifact
@@ -66,7 +69,7 @@ jobs:
           mkdir _site
           cp index.html styles.css app.js mobile.js \
              mobile-base.js mobile-enhancements.js mobile-hotfix.js \
-             mobile-png-fix.js mobile-action-nav-fix.js public-copy-cleanup.js \
+             mobile-png-fix.js mobile-action-nav-fix.js academic-fixes.js public-copy-cleanup.js \
              visitor-stats.js data-pack.json rules-pack.json certificate-rules.json \
              comprehensive-exam-2026-1.json _site/
           touch _site/.nojekyll
