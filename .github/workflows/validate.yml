@@ -41,9 +41,11 @@ jobs:
           node --check mobile-hotfix.js
           node --check mobile-png-fix.js
           node --check mobile-action-nav-fix.js
+          node --check academic-fixes.js
           node --check public-copy-cleanup.js
           node --check visitor-stats.js
           node --check tests/action_navigation_regression.cjs
+          node --check tests/academic_fixes_regression.cjs
 
       - name: Data and markup validation
         shell: bash
@@ -57,4 +59,5 @@ jobs:
           set -o pipefail
           node tests/projection_regression.cjs | tee application.log
           node tests/action_navigation_regression.cjs
+          node tests/academic_fixes_regression.cjs
           node tests/visitor_stats_regression.cjs
